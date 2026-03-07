@@ -1,0 +1,34 @@
+{
+  "name": "wilson-portfolio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "party:dev": "npx partykit dev",
+    "party:deploy": "npx partykit deploy"
+  },
+  "dependencies": {
+    "lucide-react": "latest",
+    "next": "16.1.6",
+    "next-sanity": "latest",
+    "partysocket": "latest",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "resend": "latest",
+    "sanity": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "partykit": "latest",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

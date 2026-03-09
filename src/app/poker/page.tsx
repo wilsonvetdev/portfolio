@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Lobby from "@/components/poker/Lobby";
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function PokerPage() {
-  return <Lobby />;
+  return (
+    <Suspense>
+      <Lobby />
+    </Suspense>
+  );
 }

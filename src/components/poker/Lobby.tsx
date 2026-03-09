@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { Users, Plus, LogIn } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Users, Plus, LogIn, Gamepad2, Eye } from "lucide-react";
+import type { Role } from "@/lib/poker-types";
 
 function generateRoomId() {
   return Math.random().toString(36).substring(2, 8);
@@ -10,14 +11,18 @@ function generateRoomId() {
 
 export default function Lobby() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteRoom = searchParams.get("room") || "";
   const [name, setName] = useState("");
-  const [roomCode, setRoomCode] = useState("");
+  const [roomCode, setRoomCode] = useState(inviteRoom);
+  const [joinRole, setJoinRole] = useState<Role>("player");
 
   function handleCreate(e: FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
     const roomId = generateRoomId();
     sessionStorage.setItem("poker-name", name.trim());
+    sessionStorage.setItem("poker-role", "facilitator");
     router.push(`/poker/${roomId}`);
   }
 
@@ -25,6 +30,7 @@ export default function Lobby() {
     e.preventDefault();
     if (!name.trim() || !roomCode.trim()) return;
     sessionStorage.setItem("poker-name", name.trim());
+    sessionStorage.setItem("poker-role", joinRole);
     router.push(`/poker/${roomCode.trim()}`);
   }
 
@@ -36,7 +42,9 @@ export default function Lobby() {
         </div>
         <h1 className="text-3xl font-bold text-secondary">Planning Poker</h1>
         <p className="text-muted mt-2">
-          Estimate stories with your team in real-time
+          {inviteRoom
+            ? "You've been invited to a session — enter your name and join!"
+            : "Estimate stories with your team in real-time"}
         </p>
       </div>
 
@@ -57,32 +65,71 @@ export default function Lobby() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <form onSubmit={handleCreate}>
-            <button
-              type="submit"
-              disabled={!name.trim()}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-dark disabled:opacity-40 transition-colors"
-            >
-              <Plus size={18} /> Create Room
-            </button>
-          </form>
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
+              Start a new session
+            </p>
+            <form onSubmit={handleCreate}>
+              <button
+                type="submit"
+                disabled={!name.trim()}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-dark disabled:opacity-40 transition-colors"
+              >
+                <Plus size={18} /> Create Room
+              </button>
+              <p className="text-xs text-muted mt-1.5 text-center">
+                You will be the facilitator
+              </p>
+            </form>
+          </div>
 
-          <form onSubmit={handleJoin} className="space-y-3">
-            <input
-              type="text"
-              value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value)}
-              placeholder="Room code"
-              className="w-full rounded-lg border border-border bg-white px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-            />
-            <button
-              type="submit"
-              disabled={!name.trim() || !roomCode.trim()}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg border-2 border-secondary text-secondary px-6 py-3 font-semibold hover:bg-secondary hover:text-white disabled:opacity-40 transition-colors"
-            >
-              <LogIn size={18} /> Join Room
-            </button>
-          </form>
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
+              Join an existing room
+            </p>
+            <form onSubmit={handleJoin} className="space-y-3">
+              <input
+                type="text"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value)}
+                placeholder="Room code"
+                className="w-full rounded-lg border border-border bg-white px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+
+              <div className="flex rounded-lg border border-border overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setJoinRole("player")}
+                  className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+                    joinRole === "player"
+                      ? "bg-secondary text-white"
+                      : "bg-white text-muted hover:text-secondary"
+                  }`}
+                >
+                  <Gamepad2 size={14} /> Player
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setJoinRole("observer")}
+                  className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+                    joinRole === "observer"
+                      ? "bg-secondary text-white"
+                      : "bg-white text-muted hover:text-secondary"
+                  }`}
+                >
+                  <Eye size={14} /> Observer
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!name.trim() || !roomCode.trim()}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg border-2 border-secondary text-secondary px-6 py-3 font-semibold hover:bg-secondary hover:text-white disabled:opacity-40 transition-colors"
+              >
+                <LogIn size={18} /> Join Room
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

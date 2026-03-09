@@ -9,6 +9,7 @@ import type {
 export default class PokerRoom implements Party.Server {
   private state: RoomState = {
     players: {},
+    facilitatorId: null,
     topic: "",
     revealed: false,
   };
@@ -20,7 +21,17 @@ export default class PokerRoom implements Party.Server {
   }
 
   onClose(conn: Party.Connection) {
+    const wasFacilitator = conn.id === this.state.facilitatorId;
     delete this.state.players[conn.id];
+
+    if (wasFacilitator) {
+      const remaining = Object.keys(this.state.players);
+      this.state.facilitatorId = remaining.length > 0 ? remaining[0] : null;
+      if (this.state.facilitatorId) {
+        this.state.players[this.state.facilitatorId].role = "facilitator";
+      }
+    }
+
     this.broadcastState();
   }
 
@@ -34,25 +45,35 @@ export default class PokerRoom implements Party.Server {
 
     switch (msg.type) {
       case "join": {
+        const isFirstPlayer = this.state.facilitatorId === null;
+        const role = isFirstPlayer ? "facilitator" : msg.role;
+
         this.state.players[sender.id] = {
           id: sender.id,
           name: msg.name,
+          role,
           vote: null,
         };
+
+        if (isFirstPlayer) {
+          this.state.facilitatorId = sender.id;
+        }
         break;
       }
       case "vote": {
         const player = this.state.players[sender.id];
-        if (player && !this.state.revealed) {
-          player.vote = msg.value;
-        }
+        if (!player || this.state.revealed) break;
+        if (player.role === "observer") break;
+        player.vote = msg.value;
         break;
       }
       case "reveal": {
+        if (sender.id !== this.state.facilitatorId) break;
         this.state.revealed = true;
         break;
       }
       case "reset": {
+        if (sender.id !== this.state.facilitatorId) break;
         this.state.revealed = false;
         for (const player of Object.values(this.state.players)) {
           player.vote = null;
@@ -60,6 +81,7 @@ export default class PokerRoom implements Party.Server {
         break;
       }
       case "set-topic": {
+        if (sender.id !== this.state.facilitatorId) break;
         this.state.topic = msg.topic;
         break;
       }

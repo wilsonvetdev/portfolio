@@ -217,9 +217,9 @@ export const fallbackAbout: About = {
 export const fallbackSiteSettings: SiteSettings = {
   _id: "settings-1",
   name: "Wilson Ng",
-  tagline: "Web Developer - Navy Vet - Deep Interest In Project Management",
+  tagline: "Tech Enthusiast - Product Mananager",
   localPortrait: "/images/portrait.png",
-  location: "New York City, New York",
+  location: "East Coast, USA",
   socialLinks: [
     {
       platform: "linkedin",

@@ -16,6 +16,7 @@ export default function Lobby() {
   const [name, setName] = useState("");
   const [roomCode, setRoomCode] = useState(inviteRoom);
   const [joinRole, setJoinRole] = useState<Role>("player");
+  const [showCreate, setShowCreate] = useState(!inviteRoom);
 
   function handleCreate(e: FormEvent) {
     e.preventDefault();
@@ -64,16 +65,59 @@ export default function Lobby() {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
-              Start a new session
+        <form onSubmit={handleJoin} className="space-y-3">
+          <input
+            type="text"
+            value={roomCode}
+            onChange={(e) => setRoomCode(e.target.value)}
+            placeholder="Room code"
+            className="w-full rounded-lg border border-border bg-white px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+          />
+
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setJoinRole("player")}
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors ${
+                joinRole === "player"
+                  ? "bg-secondary text-white"
+                  : "bg-white text-muted hover:text-secondary"
+              }`}
+            >
+              <Gamepad2 size={14} /> Player
+            </button>
+            <button
+              type="button"
+              onClick={() => setJoinRole("observer")}
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors ${
+                joinRole === "observer"
+                  ? "bg-secondary text-white"
+                  : "bg-white text-muted hover:text-secondary"
+              }`}
+            >
+              <Eye size={14} /> Observer
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={!name.trim() || !roomCode.trim()}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-white px-6 py-3.5 text-base font-semibold hover:bg-primary-dark disabled:opacity-40 transition-colors"
+          >
+            <LogIn size={18} /> Join Room
+          </button>
+        </form>
+
+        {showCreate ? (
+          <div className="border-t border-border pt-5">
+            <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2 text-center">
+              Or start a new session
             </p>
             <form onSubmit={handleCreate}>
               <button
                 type="submit"
                 disabled={!name.trim()}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-dark disabled:opacity-40 transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-border text-secondary px-6 py-3 font-medium hover:bg-card disabled:opacity-40 transition-colors"
               >
                 <Plus size={18} /> Create Room
               </button>
@@ -82,55 +126,17 @@ export default function Lobby() {
               </p>
             </form>
           </div>
-
-          <div>
-            <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
-              Join an existing room
-            </p>
-            <form onSubmit={handleJoin} className="space-y-3">
-              <input
-                type="text"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value)}
-                placeholder="Room code"
-                className="w-full rounded-lg border border-border bg-white px-4 py-3 text-foreground placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-              />
-
-              <div className="flex rounded-lg border border-border overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setJoinRole("player")}
-                  className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
-                    joinRole === "player"
-                      ? "bg-secondary text-white"
-                      : "bg-white text-muted hover:text-secondary"
-                  }`}
-                >
-                  <Gamepad2 size={14} /> Player
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setJoinRole("observer")}
-                  className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
-                    joinRole === "observer"
-                      ? "bg-secondary text-white"
-                      : "bg-white text-muted hover:text-secondary"
-                  }`}
-                >
-                  <Eye size={14} /> Observer
-                </button>
-              </div>
-
-              <button
-                type="submit"
-                disabled={!name.trim() || !roomCode.trim()}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-lg border-2 border-secondary text-secondary px-6 py-3 font-semibold hover:bg-secondary hover:text-white disabled:opacity-40 transition-colors"
-              >
-                <LogIn size={18} /> Join Room
-              </button>
-            </form>
-          </div>
-        </div>
+        ) : (
+          <p className="text-center">
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="text-sm text-muted hover:text-secondary underline transition-colors"
+            >
+              Or create a new room instead
+            </button>
+          </p>
+        )}
       </div>
     </div>
   );

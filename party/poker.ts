@@ -14,6 +14,8 @@ export default class PokerRoom implements Party.Server {
     revealed: false,
   };
 
+  private originalFacilitatorName: string | null = null;
+
   constructor(readonly room: Party.Room) {}
 
   onConnect(conn: Party.Connection) {
@@ -46,7 +48,25 @@ export default class PokerRoom implements Party.Server {
     switch (msg.type) {
       case "join": {
         const isFirstPlayer = this.state.facilitatorId === null;
-        const role = isFirstPlayer ? "facilitator" : msg.role;
+        const isReturningFacilitator =
+          !isFirstPlayer &&
+          msg.role === "facilitator" &&
+          this.originalFacilitatorName !== null &&
+          msg.name === this.originalFacilitatorName;
+
+        let role = msg.role;
+        if (isFirstPlayer || isReturningFacilitator) {
+          role = "facilitator";
+        } else if (role === "facilitator") {
+          role = "player";
+        }
+
+        if (isReturningFacilitator && this.state.facilitatorId) {
+          const current = this.state.players[this.state.facilitatorId];
+          if (current) {
+            current.role = "player";
+          }
+        }
 
         this.state.players[sender.id] = {
           id: sender.id,
@@ -57,7 +77,11 @@ export default class PokerRoom implements Party.Server {
 
         if (isFirstPlayer) {
           this.state.facilitatorId = sender.id;
+          this.originalFacilitatorName = msg.name;
+        } else if (isReturningFacilitator) {
+          this.state.facilitatorId = sender.id;
         }
+
         break;
       }
       case "vote": {
